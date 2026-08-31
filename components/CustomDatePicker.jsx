@@ -18,7 +18,7 @@ const MONTH_NAMES = [
     'July', 'August', 'September', 'October', 'November', 'December'
 ];
 
-const CustomDatePicker = ({ value, onChange }) => {
+const CustomDatePicker = ({ value, onChange, dropdownPosition = 'right' }) => {
     const [isOpen, setIsOpen] = useState(false);
     const containerRef = useRef(null);
 
@@ -102,9 +102,7 @@ const CustomDatePicker = ({ value, onChange }) => {
 
     const selectToday = () => {
         const now = new Date();
-        setViewYear(now.getFullYear());
-        setViewMonth(now.getMonth());
-        emitChange(now.getFullYear(), now.getMonth(), now.getDate(), parsed.hours, parsed.minutes);
+        onChange(now);
     };
 
     // Build the calendar grid cells
@@ -133,6 +131,10 @@ const CustomDatePicker = ({ value, onChange }) => {
     const pad = (n) => String(n).padStart(2, '0');
     const displayStr = `${parsed.day} ${MONTH_NAMES[parsed.month].slice(0, 3)} ${parsed.year}, ${pad(parsed.hours)}:${pad(parsed.minutes)}`;
 
+    const positionClass = dropdownPosition === 'bottom-right' 
+        ? 'top-full right-0 mt-2' 
+        : 'bottom-0 left-full ml-4';
+
     return (
         <div ref={containerRef} className="relative w-full">
             {/* The styled trigger button */}
@@ -147,7 +149,7 @@ const CustomDatePicker = ({ value, onChange }) => {
 
             {/* The popover calendar */}
             {isOpen && (
-                <div className="absolute z-50 bottom-0 left-full ml-4 w-[320px] bg-white dark:bg-[#1c1b1f] border border-gray-200 dark:border-gray-800 rounded-3xl shadow-2xl p-5 animate-fade-in">
+                <div className={`absolute z-50 w-[320px] bg-white dark:bg-[#1c1b1f] border border-gray-200 dark:border-gray-800 rounded-3xl shadow-2xl p-5 animate-fade-in ${positionClass}`}>
                     
                     {/* Month/Year Navigation */}
                     <div className="flex items-center justify-between mb-4">

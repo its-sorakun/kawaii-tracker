@@ -5,10 +5,11 @@ import Icon from './Icon.jsx';
 const TopNavigation = ({ theme, setTheme, weeklyTotal }) => {
     const navItems = [
         { path: '/', icon: 'plus-circle', label: 'Log' },
+        { path: '/planner', icon: 'calendar', label: 'Planner' },
         { path: '/history', icon: 'list', label: 'History' },
         { path: '/chart', icon: 'bar-chart-2', label: 'Chart' },
         { path: '/insights', icon: 'sparkles', label: 'Insights' },
-        { path: '/settings', icon: 'settings', label: 'Settings' },
+        { path: '/settings', icon: 'settings', label: 'Settings' }
     ];
 
     return (

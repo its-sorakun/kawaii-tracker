@@ -4,6 +4,7 @@ import TopNavigation from './components/TopNavigation.jsx';
 import LogPage from './pages/LogPage.jsx';
 import ChartPage from './pages/ChartPage.jsx';
 import HistoryPage from './pages/HistoryPage.jsx';
+import PlannerPage from './pages/PlannerPage.jsx';
 import InsightsPage from './pages/InsightsPage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
 import { loadData, saveData } from './utils/storage.js';
@@ -24,6 +25,7 @@ const App = () => {
     const [logs, setLogs] = useState([]);
     const [profile, setProfile] = useState({ height: '', weight: '', age: '', gender: 'male' });
     const [chatHistory, setChatHistory] = useState([]);
+    const [plannerNotes, setPlannerNotes] = useState({});
     
     // File Sync States
     const [fileHandle, setFileHandle] = useState(null);
@@ -51,6 +53,7 @@ const App = () => {
                 setLogs(loadData('calorie_logs', []));
                 setProfile(loadData('user_profile', { height: '', weight: '', age: '', gender: 'male' }));
                 setChatHistory(loadData('gemini_chat', []));
+                setPlannerNotes(loadData('planner_notes', {}));
                 setIsAppLoaded(true);
             }
         };
@@ -59,7 +62,7 @@ const App = () => {
 
     const skipNextSync = React.useRef(false);
 
-    const performSyncWrite = useCallback(async (currentLogs, currentProfile, currentChat) => {
+    const performSyncWrite = useCallback(async (currentLogs, currentProfile, currentChat, currentPlanner) => {
         if (!isAppLoaded) return;
         
         if (fileHandle && !needsPermission) {
@@ -68,7 +71,8 @@ const App = () => {
                 await writeDataToFile(fileHandle, {
                     logs: currentLogs,
                     profile: currentProfile,
-                    chatHistory: currentChat
+                    chatHistory: currentChat,
+                    plannerNotes: currentPlanner
                 });
                 setLastSyncTime(new Date().toLocaleTimeString());
             } catch (err) {
@@ -80,6 +84,7 @@ const App = () => {
             saveData('calorie_logs', currentLogs);
             saveData('user_profile', currentProfile);
             saveData('gemini_chat', currentChat);
+            saveData('planner_notes', currentPlanner);
         }
     }, [fileHandle, needsPermission, isAppLoaded]);
 
@@ -98,6 +103,7 @@ const App = () => {
                 if (data.logs) setLogs(data.logs);
                 if (data.profile) setProfile(data.profile);
                 if (data.chatHistory) setChatHistory(data.chatHistory);
+                if (data.plannerNotes) setPlannerNotes(data.plannerNotes);
             }
             setNeedsPermission(false);
             setIsAppLoaded(true);
@@ -117,6 +123,7 @@ const App = () => {
                 if (data.logs) setLogs(data.logs);
                 if (data.profile) setProfile(data.profile);
                 if (data.chatHistory) setChatHistory(data.chatHistory);
+                if (data.plannerNotes) setPlannerNotes(data.plannerNotes);
             }
             setNeedsPermission(false);
             setIsAppLoaded(true);
@@ -133,29 +140,38 @@ const App = () => {
     const handleAddLog = (newLog) => {
         const newLogs = [newLog, ...logs].sort((a, b) => new Date(b.date) - new Date(a.date));
         setLogs(newLogs);
-        performSyncWrite(newLogs, profile, chatHistory);
+        performSyncWrite(newLogs, profile, chatHistory, plannerNotes);
     };
 
     const handleDeleteLog = (id) => {
         const newLogs = logs.filter(l => l.id !== id);
         setLogs(newLogs);
-        performSyncWrite(newLogs, profile, chatHistory);
+        performSyncWrite(newLogs, profile, chatHistory, plannerNotes);
     };
 
     const handleUpdateProfile = (newProfile) => {
         setProfile(newProfile);
-        performSyncWrite(logs, newProfile, chatHistory);
+        performSyncWrite(logs, newProfile, chatHistory, plannerNotes);
     };
 
     const handleUpdateChatHistory = (newHistory) => {
         // Handle function updates if needed (though we mostly pass arrays)
         const resolvedHistory = typeof newHistory === 'function' ? newHistory(chatHistory) : newHistory;
         setChatHistory(resolvedHistory);
-        performSyncWrite(logs, profile, resolvedHistory);
+        performSyncWrite(logs, profile, resolvedHistory, plannerNotes);
+    };
+
+    const handleUpdatePlanner = (dateString, text) => {
+        const newPlanner = { ...plannerNotes, [dateString]: text };
+        // Clean up empty notes
+        if (typeof text === 'string' && !text.trim()) delete newPlanner[dateString];
+        
+        setPlannerNotes(newPlanner);
+        performSyncWrite(logs, profile, chatHistory, newPlanner);
     };
 
     const handleDownloadJSON = () => {
-        const data = { profile, logs, chatHistory };
+        const data = { profile, logs, chatHistory, plannerNotes };
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -213,6 +229,7 @@ const App = () => {
                             <Route path="/" element={<LogPage onAddLog={handleAddLog} />} />
                             <Route path="/chart" element={<ChartPage logs={logs} theme={theme} profile={profile} />} />
                             <Route path="/history" element={<HistoryPage logs={logs} onDeleteLog={handleDeleteLog} />} />
+                            <Route path="/planner" element={<PlannerPage plannerNotes={plannerNotes} onUpdatePlanner={handleUpdatePlanner} />} />
                             <Route path="/insights" element={
                                 <InsightsPage 
                                     profile={profile} 
@@ -220,6 +237,7 @@ const App = () => {
                                     chatHistory={chatHistory} 
                                     setChatHistory={handleUpdateChatHistory} 
                                     weeklyTotal={weeklyTotal}
+                                    plannerNotes={plannerNotes}
                                 />
                             } />
                             <Route path="/settings" element={

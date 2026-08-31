@@ -67,7 +67,7 @@ const CleanMarkdown = ({ text }) => {
     );
 };
 
-const InsightsPage = ({ profile, logs, chatHistory, setChatHistory, weeklyTotal }) => {
+const InsightsPage = ({ profile, logs, chatHistory, setChatHistory, weeklyTotal, plannerNotes }) => {
     const [chatInput, setChatInput] = useState('');
     const [isThinking, setIsThinking] = useState(false);
     const chatScrollRef = useRef(null);
@@ -132,6 +132,28 @@ const InsightsPage = ({ profile, logs, chatHistory, setChatHistory, weeklyTotal 
             const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
             const oneWeekLogs = logs.filter(l => new Date(l.date) >= oneWeekAgo);
 
+            const upcomingNotes = {};
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(now);
+                d.setDate(d.getDate() + i);
+                const dateKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                
+                const noteData = plannerNotes && plannerNotes[dateKey];
+                if (noteData) {
+                    if (Array.isArray(noteData)) {
+                        // Flatten block array into markdown string to save AI tokens
+                        upcomingNotes[dateKey] = noteData.map(block => {
+                            if (block.type === 'checkbox') return `- [${block.checked ? 'x' : ' '}] ${block.content}`;
+                            if (block.type === 'bullet') return `- ${block.content}`;
+                            if (block.type === 'number') return `1. ${block.content}`;
+                            return block.content;
+                        }).join('\n');
+                    } else {
+                        upcomingNotes[dateKey] = noteData;
+                    }
+                }
+            }
+
             const systemContext = `
                 You are a helpful, direct, and slightly technical AI assistant embedded in a Calorie Tracker app.
                 The current local date and time is: ${now.toLocaleString()}.
@@ -144,6 +166,9 @@ const InsightsPage = ({ profile, logs, chatHistory, setChatHistory, weeklyTotal 
 
                 Here is their calorie log for the last 7 days (JSON format):
                 ${JSON.stringify(oneWeekLogs)}
+
+                Here are their planned meals/notes for the upcoming 7 days (JSON format):
+                ${JSON.stringify(upcomingNotes)}
                 
                 Keep your answers concise, practical, and formatting using plain text or basic markdown (**bold**, * lists). 
                 Focus on the data provided. Use the 12-week macro trend to identify if they are actually losing weight over time (compare their weekly total against their weekly BMR).
