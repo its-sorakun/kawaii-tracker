@@ -1,4 +1,4 @@
-const loadData = (key, fallback) => {
+export const loadData = (key, fallback) => {
     try {
         const item = localStorage.getItem(key);
         return item ? JSON.parse(item) : fallback;
@@ -8,6 +8,6 @@ const loadData = (key, fallback) => {
     }
 };
 
-const saveData = (key, value) => {
+export const saveData = (key, value) => {
     localStorage.setItem(key, JSON.stringify(value));
 };

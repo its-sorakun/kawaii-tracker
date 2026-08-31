@@ -1,16 +1,20 @@
-const { useState, useEffect } = React;
+import React, { useState, useEffect } from 'react';
+import Icon from './components/Icon.jsx';
+import Card from './components/Card.jsx';
+import LogForm from './components/LogForm.jsx';
+import Profile from './components/Profile.jsx';
+import WeeklyChart from './components/WeeklyChart.jsx';
+import GeminiChat from './components/GeminiChat.jsx';
+import { loadData, saveData } from './utils/storage.js';
 
 const App = () => {
-    // State Initialization using global loadData/saveData from utils/storage.js
     const [theme, setTheme] = useState(() => loadData('theme', 'light'));
     const [logs, setLogs] = useState(() => loadData('calorie_logs', []));
     const [profile, setProfile] = useState(() => loadData('user_profile', { height: '', weight: '' }));
     const [chatHistory, setChatHistory] = useState(() => loadData('gemini_chat', []));
     
-    // UI State
     const [isChatOpen, setIsChatOpen] = useState(false);
 
-    // Apply theme to document element so Tailwind's 'dark:' variants work
     useEffect(() => {
         if (theme === 'dark') {
             document.documentElement.classList.add('dark');
@@ -20,12 +24,9 @@ const App = () => {
         saveData('theme', theme);
     }, [theme]);
 
-    // Save data when it changes
     useEffect(() => { saveData('calorie_logs', logs); }, [logs]);
     useEffect(() => { saveData('user_profile', profile); }, [profile]);
     useEffect(() => { saveData('gemini_chat', chatHistory); }, [chatHistory]);
-
-    // --- HANDLERS ---
 
     const handleAddLog = (newLog) => {
         setLogs([newLog, ...logs].sort((a, b) => new Date(b.date) - new Date(a.date)));
@@ -45,13 +46,9 @@ const App = () => {
         a.click();
         URL.revokeObjectURL(url);
     };
-
-    // --- RENDER ---
     
     return (
         <div className="min-h-screen p-4 md:p-8 max-w-6xl mx-auto flex flex-col gap-8">
-            
-            {/* Header */}
             <header className="flex justify-between items-center">
                 <div className="flex items-center gap-3">
                     <div className="bg-indigo-500 text-white p-2 rounded-2xl">
@@ -78,27 +75,26 @@ const App = () => {
                     </button>
                     <button 
                         onClick={() => setIsChatOpen(true)}
-                        className="p-3 rounded-2xl bg-indigo-500 text-white hover:bg-indigo-600 transition-colors flex items-center gap-2 shadow-lg shadow-indigo-500/30"
+                        className="p-3 rounded-2xl bg-indigo-500 text-white hover:bg-indigo-600 transition-colors flex items-center gap-2 shadow-lg shadow-indigo-500/30 group"
                     >
-                        <Icon name="sparkles" />
+                        {/* We add a slight pulse animation to the button icon for that AI feel */}
+                        <div className="group-hover:animate-pulse">
+                            <Icon name="sparkles" />
+                        </div>
                         <span className="hidden sm:inline font-medium">Insights</span>
                     </button>
                 </div>
             </header>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                
-                {/* Left Column: Logging & Profile */}
                 <div className="flex flex-col gap-8">
                     <LogForm onAdd={handleAddLog} />
                     <Profile profile={profile} setProfile={setProfile} />
                 </div>
 
-                {/* Right Column: Chart & History */}
                 <div className="lg:col-span-2 flex flex-col gap-8">
                     <WeeklyChart logs={logs} theme={theme} />
 
-                    {/* Log History */}
                     <Card className="flex-1 overflow-hidden flex flex-col">
                         <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
                             <Icon name="list" className="text-orange-500" />
@@ -144,20 +140,8 @@ const App = () => {
                 chatHistory={chatHistory}
                 setChatHistory={setChatHistory}
             />
-            
-            <style dangerouslySetInnerHTML={{__html: `
-                @keyframes slide-in-right {
-                    from { transform: translateX(100%); }
-                    to { transform: translateX(0); }
-                }
-                .animate-slide-in-right {
-                    animation: slide-in-right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-                }
-            `}} />
-
         </div>
     );
 };
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<App />);
+export default App;

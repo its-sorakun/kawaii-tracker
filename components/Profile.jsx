@@ -1,3 +1,7 @@
+import React from 'react';
+import Card from './Card.jsx';
+import Icon from './Icon.jsx';
+
 const Profile = ({ profile, setProfile }) => {
     return (
         <Card>
@@ -30,3 +34,5 @@ const Profile = ({ profile, setProfile }) => {
         </Card>
     );
 };
+
+export default Profile;

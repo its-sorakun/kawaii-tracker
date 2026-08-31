@@ -4,66 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calorie Tracker Insights</title>
-
-    <!-- Tailwind CSS v4 (Browser Development CDN) -->
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-
-    <!-- React 18 UMD -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-
-    <!-- Babel for in-browser JSX compilation -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-
-    <style type="text/tailwindcss">
-        /* Tell Tailwind v4 to use the .dark class instead of OS media queries */
-        @custom-variant dark (&:where(.dark, .dark *));
-    </style>
-
-    <style>
-        /* Hide scrollbar for a cleaner look, keeping with the 'beautiful UI' requirement */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-        .dark ::-webkit-scrollbar-thumb {
-            background: #475569;
-        }
-    </style>
 </head>
 <body class="bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100 transition-colors duration-300 antialiased">
-    
     <div id="root"></div>
-
-    <!-- Configuration -->
-    <script src="./config.js"></script>
-
-    <!-- Utilities -->
-    <script src="./utils/storage.js"></script>
-    <script src="./utils/dateUtils.js"></script>
-
-    <!-- Components -->
-    <script type="text/babel" src="./components/Icon.jsx"></script>
-    <script type="text/babel" src="./components/Card.jsx"></script>
-    <script type="text/babel" src="./components/LogForm.jsx"></script>
-    <script type="text/babel" src="./components/Profile.jsx"></script>
-    <script type="text/babel" src="./components/WeeklyChart.jsx"></script>
-    <script type="text/babel" src="./components/GeminiChat.jsx"></script>
-    
-    <!-- Main App -->
-    <script type="text/babel" src="./app.jsx"></script>
-    
+    <script type="module" src="/main.jsx"></script>
 </body>
 </html>

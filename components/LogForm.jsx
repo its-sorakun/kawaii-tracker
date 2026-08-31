@@ -1,4 +1,6 @@
-const { useState } = React;
+import React, { useState } from 'react';
+import Card from './Card.jsx';
+import Icon from './Icon.jsx';
 
 const LogForm = ({ onAdd }) => {
     const [foodName, setFoodName] = useState('');
@@ -74,3 +76,5 @@ const LogForm = ({ onAdd }) => {
         </Card>
     );
 };
+
+export default LogForm;

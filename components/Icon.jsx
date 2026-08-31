@@ -1,18 +1,16 @@
-const { useEffect, useRef } = React;
+import React from 'react';
+import * as LucideIcons from 'lucide-react';
 
-const Icon = ({ name, className = "" }) => {
-    const iconRef = useRef(null);
+const Icon = ({ name, className = "", size = 24 }) => {
+    // Convert kebab-case (e.g. plus-circle) to PascalCase (PlusCircle)
+    const iconName = name.split('-').map(part => part.charAt(0).toUpperCase() + part.slice(1)).join('');
+    const LucideIcon = LucideIcons[iconName];
 
-    useEffect(() => {
-        if (window.lucide && iconRef.current) {
-            // Re-create the <i> tag inside our stable span
-            iconRef.current.innerHTML = `<i data-lucide="${name}" class="${className}"></i>`;
-            window.lucide.createIcons({
-                root: iconRef.current
-            });
-        }
-    }, [name, className]);
+    if (!LucideIcon) {
+        return <span className={`inline-block w-6 h-6 bg-red-500 rounded-full ${className}`}></span>;
+    }
 
-    // React tracks this span, Lucide replaces the <i> inside it. Separation of DOM concerns!
-    return <span ref={iconRef} className="inline-flex items-center justify-center"></span>;
+    return <LucideIcon className={className} size={size} />;
 };
+
+export default Icon;
