@@ -10,8 +10,26 @@ const CleanMarkdown = ({ text }) => {
         <div className="text-base text-gray-900 dark:text-gray-100 font-sans">
             {lines.map((line, i) => {
                 const trimmed = line.trim();
-                const isListItem = trimmed.startsWith('* ') || trimmed.startsWith('- ');
-                const rawContent = isListItem ? trimmed.substring(2) : line;
+                
+                let isListItem = false;
+                let isH1 = false;
+                let isH2 = false;
+                let isH3 = false;
+                let rawContent = line;
+
+                if (trimmed.startsWith('### ')) {
+                    isH3 = true;
+                    rawContent = trimmed.substring(4);
+                } else if (trimmed.startsWith('## ')) {
+                    isH2 = true;
+                    rawContent = trimmed.substring(3);
+                } else if (trimmed.startsWith('# ')) {
+                    isH1 = true;
+                    rawContent = trimmed.substring(2);
+                } else if (trimmed.startsWith('* ') || trimmed.startsWith('- ')) {
+                    isListItem = true;
+                    rawContent = trimmed.substring(2);
+                }
                 
                 // Tokenize **bold** text
                 const tokens = rawContent.split(/(\*\*.*?\*\*)/g);
@@ -21,6 +39,16 @@ const CleanMarkdown = ({ text }) => {
                     }
                     return <span key={j}>{token}</span>;
                 });
+
+                if (isH1) {
+                    return <h1 key={i} className="text-2xl font-bold mt-6 mb-3 text-gray-900 dark:text-white tracking-tight">{renderedTokens}</h1>;
+                }
+                if (isH2) {
+                    return <h2 key={i} className="text-xl font-bold mt-5 mb-2 text-gray-900 dark:text-white tracking-tight">{renderedTokens}</h2>;
+                }
+                if (isH3) {
+                    return <h3 key={i} className="text-lg font-semibold mt-4 mb-2 text-gray-800 dark:text-gray-200">{renderedTokens}</h3>;
+                }
 
                 if (isListItem) {
                     return (
