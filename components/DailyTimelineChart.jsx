@@ -11,7 +11,7 @@ import {
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import Card from './Card.jsx';
-import { getLast7Days } from '../utils/dateUtils.js';
+import { getLastNDays } from '../utils/dateUtils.js';
 
 ChartJS.register(
   CategoryScale,
@@ -23,8 +23,8 @@ ChartJS.register(
   Filler
 );
 
-const WeeklyChart = ({ logs, theme, profile }) => {
-    const days = getLast7Days();
+const DailyTimelineChart = ({ logs, theme, profile }) => {
+    const days = getLastNDays(14);
     const dataMap = {};
     days.forEach(d => dataMap[d] = 0);
     
@@ -151,6 +151,10 @@ const WeeklyChart = ({ logs, theme, profile }) => {
 
     return (
         <Card className="h-full flex flex-col p-8">
+            <header className="mb-6">
+                <h2 className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">14-Day Variance</h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Daily calorie fluctuations over the last two weeks.</p>
+            </header>
             <div className="flex-1 relative w-full">
                 <Line data={data} options={options} />
             </div>
@@ -158,4 +162,4 @@ const WeeklyChart = ({ logs, theme, profile }) => {
     );
 };
 
-export default WeeklyChart;
+export default DailyTimelineChart;

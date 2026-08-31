@@ -46,7 +46,7 @@ const TopNavigation = ({ theme, setTheme, weeklyTotal }) => {
                 <div className="flex items-center gap-4">
                     {/* Weekly Total Widget */}
                     <div className="hidden md:flex flex-col items-end mr-2">
-                        <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">7-Day Total</span>
+                        <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">This Week</span>
                         <span className="text-sm font-extrabold text-indigo-600 dark:text-indigo-400">{weeklyTotal?.toLocaleString() || 0} kcal</span>
                     </div>
 

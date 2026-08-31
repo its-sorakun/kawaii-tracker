@@ -175,12 +175,16 @@ const App = () => {
         onRequestPermission: handleRequestPermission
     };
     
-    // Calculate 7-day rolling total
+    // Calculate "This Week's" total (starting from the most recent Monday at 00:00)
     const weeklyTotal = React.useMemo(() => {
         const now = new Date();
-        const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        now.setHours(0, 0, 0, 0);
+        const currentDay = now.getDay() || 7; // Sunday=0 -> 7
+        const thisMonday = new Date(now);
+        thisMonday.setDate(now.getDate() - currentDay + 1);
+        
         return logs
-            .filter(log => new Date(log.date) >= oneWeekAgo)
+            .filter(log => new Date(log.date) >= thisMonday)
             .reduce((sum, log) => sum + log.calories, 0);
     }, [logs]);
 
