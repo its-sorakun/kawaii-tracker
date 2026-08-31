@@ -1,43 +1,154 @@
-import React, { useState, useEffect } from 'react';
-import Icon from './components/Icon.jsx';
-import Card from './components/Card.jsx';
-import LogForm from './components/LogForm.jsx';
-import Profile from './components/Profile.jsx';
-import WeeklyChart from './components/WeeklyChart.jsx';
-import GeminiChat from './components/GeminiChat.jsx';
+import React, { useState, useEffect, useCallback } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import TopNavigation from './components/TopNavigation.jsx';
+import LogPage from './pages/LogPage.jsx';
+import ChartPage from './pages/ChartPage.jsx';
+import HistoryPage from './pages/HistoryPage.jsx';
+import InsightsPage from './pages/InsightsPage.jsx';
 import { loadData, saveData } from './utils/storage.js';
+import { 
+    selectSyncFile, 
+    getStoredFileHandle, 
+    verifyPermission, 
+    readDataFromFile, 
+    writeDataToFile, 
+    disconnectSyncFile 
+} from './utils/fileSync.js';
 
 const App = () => {
+    // Basic Theme State (still stored in localStorage because it's a UI preference)
     const [theme, setTheme] = useState(() => loadData('theme', 'light'));
-    const [logs, setLogs] = useState(() => loadData('calorie_logs', []));
-    const [profile, setProfile] = useState(() => loadData('user_profile', { height: '', weight: '' }));
-    const [chatHistory, setChatHistory] = useState(() => loadData('gemini_chat', []));
     
-    const [isChatOpen, setIsChatOpen] = useState(false);
+    // Core Data States
+    const [logs, setLogs] = useState([]);
+    const [profile, setProfile] = useState({ height: '', weight: '', age: '', gender: 'male' });
+    const [chatHistory, setChatHistory] = useState([]);
+    
+    // File Sync States
+    const [fileHandle, setFileHandle] = useState(null);
+    const [needsPermission, setNeedsPermission] = useState(false);
+    const [isSyncing, setIsSyncing] = useState(false);
+    const [lastSyncTime, setLastSyncTime] = useState(null);
+    const [isAppLoaded, setIsAppLoaded] = useState(false); // Prevents saving before initial load
 
     useEffect(() => {
-        if (theme === 'dark') {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
+        if (theme === 'dark') document.documentElement.classList.add('dark');
+        else document.documentElement.classList.remove('dark');
         saveData('theme', theme);
     }, [theme]);
 
-    useEffect(() => { saveData('calorie_logs', logs); }, [logs]);
-    useEffect(() => { saveData('user_profile', profile); }, [profile]);
-    useEffect(() => { saveData('gemini_chat', chatHistory); }, [chatHistory]);
+    // Initial Load: Check for stored file handle or fallback to localStorage
+    useEffect(() => {
+        const initStorage = async () => {
+            const storedHandle = await getStoredFileHandle();
+            if (storedHandle) {
+                setFileHandle(storedHandle);
+                // We cannot read yet because we need user gesture permission on refresh
+                setNeedsPermission(true);
+            } else {
+                // Fallback to localStorage if no file is connected
+                setLogs(loadData('calorie_logs', []));
+                setProfile(loadData('user_profile', { height: '', weight: '', age: '', gender: 'male' }));
+                setChatHistory(loadData('gemini_chat', []));
+                setIsAppLoaded(true);
+            }
+        };
+        initStorage();
+    }, []);
+
+    const skipNextSync = React.useRef(false);
+
+    const performSyncWrite = useCallback(async (currentLogs, currentProfile, currentChat) => {
+        if (!isAppLoaded) return;
+        
+        if (fileHandle && !needsPermission) {
+            setIsSyncing(true);
+            try {
+                await writeDataToFile(fileHandle, {
+                    logs: currentLogs,
+                    profile: currentProfile,
+                    chatHistory: currentChat
+                });
+                setLastSyncTime(new Date().toLocaleTimeString());
+            } catch (err) {
+                console.error("Write failed:", err);
+            } finally {
+                setIsSyncing(false);
+            }
+        } else {
+            saveData('calorie_logs', currentLogs);
+            saveData('user_profile', currentProfile);
+            saveData('gemini_chat', currentChat);
+        }
+    }, [fileHandle, needsPermission, isAppLoaded]);
+
+    // Auto-sync whenever data changes
+    useEffect(() => {
+        if (!isAppLoaded) return;
+        if (skipNextSync.current) {
+            skipNextSync.current = false;
+            return;
+        }
+        performSyncWrite(logs, profile, chatHistory);
+    }, [logs, profile, chatHistory, performSyncWrite, isAppLoaded]);
+
+    const handleConnectFile = async (e) => {
+        if (e) e.preventDefault();
+        try {
+            const handle = await selectSyncFile();
+            setFileHandle(handle);
+            
+            // Read existing data from the selected file
+            const data = await readDataFromFile(handle);
+            if (data) {
+                skipNextSync.current = true;
+                if (data.logs) setLogs(data.logs);
+                if (data.profile) setProfile(data.profile);
+                if (data.chatHistory) setChatHistory(data.chatHistory);
+            }
+            setNeedsPermission(false);
+            setIsAppLoaded(true);
+            setLastSyncTime(new Date().toLocaleTimeString());
+        } catch (err) {
+            console.error("Connection cancelled or failed", err);
+        }
+    };
+
+    const handleRequestPermission = async (e) => {
+        if (e) e.preventDefault();
+        if (!fileHandle) return;
+        const granted = await verifyPermission(fileHandle);
+        if (granted) {
+            const data = await readDataFromFile(fileHandle);
+            if (data) {
+                skipNextSync.current = true;
+                if (data.logs) setLogs(data.logs);
+                if (data.profile) setProfile(data.profile);
+                if (data.chatHistory) setChatHistory(data.chatHistory);
+            }
+            setNeedsPermission(false);
+            setIsAppLoaded(true);
+            setLastSyncTime(new Date().toLocaleTimeString());
+        }
+    };
+
+    const handleDisconnect = async () => {
+        await disconnectSyncFile();
+        setFileHandle(null);
+        setNeedsPermission(false);
+        // We drop back to whatever is in memory, it will save to localStorage on next change
+    };
 
     const handleAddLog = (newLog) => {
-        setLogs([newLog, ...logs].sort((a, b) => new Date(b.date) - new Date(a.date)));
+        setLogs(prev => [newLog, ...prev].sort((a, b) => new Date(b.date) - new Date(a.date)));
     };
 
     const handleDeleteLog = (id) => {
-        setLogs(logs.filter(l => l.id !== id));
+        setLogs(prev => prev.filter(l => l.id !== id));
     };
 
     const handleDownloadJSON = () => {
-        const data = { profile, logs };
+        const data = { profile, logs, chatHistory };
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -46,101 +157,64 @@ const App = () => {
         a.click();
         URL.revokeObjectURL(url);
     };
+
+    const syncProps = {
+        fileHandle,
+        isSyncing,
+        lastSyncTime,
+        needsPermission,
+        onConnect: handleConnectFile,
+        onDisconnect: handleDisconnect,
+        onRequestPermission: handleRequestPermission
+    };
     
     return (
-        <div className="min-h-screen p-4 md:p-8 max-w-6xl mx-auto flex flex-col gap-8">
-            <header className="flex justify-between items-center">
-                <div className="flex items-center gap-3">
-                    <div className="bg-indigo-500 text-white p-2 rounded-2xl">
-                        <Icon name="activity" />
-                    </div>
-                    <h1 className="text-2xl font-bold tracking-tight">Track.</h1>
-                </div>
+        <Router>
+            <div className="min-h-screen bg-gray-50 dark:bg-[#141218] flex flex-col transition-colors duration-300">
+                <TopNavigation theme={theme} setTheme={setTheme} />
                 
-                <div className="flex gap-4">
-                    <button 
-                        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                        className="p-3 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                        title="Toggle Theme"
-                    >
-                        <Icon name={theme === 'dark' ? 'sun' : 'moon'} />
-                    </button>
-                    <button 
-                        onClick={handleDownloadJSON}
-                        className="p-3 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-2"
-                        title="Export JSON"
-                    >
-                        <Icon name="download" />
-                        <span className="hidden sm:inline font-medium">Export</span>
-                    </button>
-                    <button 
-                        onClick={() => setIsChatOpen(true)}
-                        className="p-3 rounded-2xl bg-indigo-500 text-white hover:bg-indigo-600 transition-colors flex items-center gap-2 shadow-lg shadow-indigo-500/30 group"
-                    >
-                        {/* We add a slight pulse animation to the button icon for that AI feel */}
-                        <div className="group-hover:animate-pulse">
-                            <Icon name="sparkles" />
+                <main className="flex-1 w-full max-w-6xl mx-auto px-4 md:px-8 py-8">
+                    {/* Block rendering if waiting for permission on load to prevent overwrite */}
+                    {fileHandle && needsPermission && !isAppLoaded ? (
+                        <div className="flex items-center justify-center h-full">
+                            <div className="text-center p-8 bg-white dark:bg-[#1c1b1f] rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800">
+                                <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Permission Required</h2>
+                                <p className="mb-6 opacity-70">Please grant access to your sync file to continue.</p>
+                                <button 
+                                    onClick={handleRequestPermission}
+                                    className="bg-indigo-500 text-white px-6 py-3 rounded-xl font-medium hover:bg-indigo-600 transition-colors"
+                                >
+                                    Grant Access to {fileHandle.name}
+                                </button>
+                            </div>
                         </div>
-                        <span className="hidden sm:inline font-medium">Insights</span>
-                    </button>
-                </div>
-            </header>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="flex flex-col gap-8">
-                    <LogForm onAdd={handleAddLog} />
-                    <Profile profile={profile} setProfile={setProfile} />
-                </div>
-
-                <div className="lg:col-span-2 flex flex-col gap-8">
-                    <WeeklyChart logs={logs} theme={theme} />
-
-                    <Card className="flex-1 overflow-hidden flex flex-col">
-                        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                            <Icon name="list" className="text-orange-500" />
-                            Recent Entries
-                        </h2>
-                        <div className="overflow-y-auto flex-1 pr-2 space-y-3" style={{ maxHeight: '400px' }}>
-                            {logs.length === 0 ? (
-                                <div className="text-center opacity-50 py-10">No entries yet. Start logging!</div>
-                            ) : (
-                                logs.map(log => (
-                                    <div key={log.id} className="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-950 rounded-2xl border border-gray-100 dark:border-gray-800 group">
-                                        <div>
-                                            <div className="font-medium text-lg">{log.food}</div>
-                                            <div className="text-sm opacity-60">
-                                                {new Date(log.date).toLocaleString(undefined, {
-                                                    weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-                                                })}
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-4">
-                                            <div className="text-xl font-bold text-indigo-500">{log.calories} <span className="text-sm font-normal opacity-60">kcal</span></div>
-                                            <button 
-                                                onClick={() => handleDeleteLog(log.id)}
-                                                className="opacity-0 group-hover:opacity-100 transition-opacity p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl"
-                                                title="Delete Entry"
-                                            >
-                                                <Icon name="trash-2" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    </Card>
-                </div>
+                    ) : (
+                        <Routes>
+                            <Route path="/" element={
+                                <LogPage 
+                                    onAddLog={handleAddLog} 
+                                    profile={profile} 
+                                    setProfile={setProfile} 
+                                    onDownloadJSON={handleDownloadJSON}
+                                    syncProps={syncProps}
+                                />
+                            } />
+                            <Route path="/chart" element={<ChartPage logs={logs} theme={theme} profile={profile} />} />
+                            <Route path="/history" element={<HistoryPage logs={logs} onDeleteLog={handleDeleteLog} />} />
+                            <Route path="/insights" element={
+                                <InsightsPage 
+                                    profile={profile} 
+                                    logs={logs} 
+                                    chatHistory={chatHistory} 
+                                    setChatHistory={setChatHistory} 
+                                />
+                            } />
+                            <Route path="*" element={<Navigate to="/" replace />} />
+                        </Routes>
+                    )}
+                </main>
             </div>
-
-            <GeminiChat 
-                isOpen={isChatOpen} 
-                onClose={() => setIsChatOpen(false)}
-                profile={profile}
-                logs={logs}
-                chatHistory={chatHistory}
-                setChatHistory={setChatHistory}
-            />
-        </div>
+        </Router>
     );
 };
 

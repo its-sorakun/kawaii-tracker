@@ -22,12 +22,12 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 app.post('/api/chat', async (req, res) => {
     try {
         const { systemInstruction, history, message } = req.body;
-        
+
         // GoogleGenAI SDK format expects contents array
         // We inject the system instruction if the model supports it.
         // For gemini-3.1-flash, we can pass systemInstruction in config
         const response = await ai.models.generateContent({
-            model: 'gemini-3.1-flash',
+            model: 'gemini-3.1-flash-lite',
             contents: [
                 ...history.map(msg => ({
                     role: msg.role === 'user' ? 'user' : 'model',
