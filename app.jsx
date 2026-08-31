@@ -5,6 +5,7 @@ import LogPage from './pages/LogPage.jsx';
 import ChartPage from './pages/ChartPage.jsx';
 import HistoryPage from './pages/HistoryPage.jsx';
 import InsightsPage from './pages/InsightsPage.jsx';
+import SettingsPage from './pages/SettingsPage.jsx';
 import { loadData, saveData } from './utils/storage.js';
 import { 
     selectSyncFile, 
@@ -146,6 +147,13 @@ const App = () => {
         performSyncWrite(logs, newProfile, chatHistory);
     };
 
+    const handleUpdateChatHistory = (newHistory) => {
+        // Handle function updates if needed (though we mostly pass arrays)
+        const resolvedHistory = typeof newHistory === 'function' ? newHistory(chatHistory) : newHistory;
+        setChatHistory(resolvedHistory);
+        performSyncWrite(logs, profile, resolvedHistory);
+    };
+
     const handleDownloadJSON = () => {
         const data = { profile, logs, chatHistory };
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -189,15 +197,7 @@ const App = () => {
                         </div>
                     ) : (
                         <Routes>
-                            <Route path="/" element={
-                                <LogPage 
-                                    onAddLog={handleAddLog} 
-                                    profile={profile} 
-                                    setProfile={handleUpdateProfile} 
-                                    onDownloadJSON={handleDownloadJSON}
-                                    syncProps={syncProps}
-                                />
-                            } />
+                            <Route path="/" element={<LogPage onAddLog={handleAddLog} />} />
                             <Route path="/chart" element={<ChartPage logs={logs} theme={theme} profile={profile} />} />
                             <Route path="/history" element={<HistoryPage logs={logs} onDeleteLog={handleDeleteLog} />} />
                             <Route path="/insights" element={
@@ -205,7 +205,15 @@ const App = () => {
                                     profile={profile} 
                                     logs={logs} 
                                     chatHistory={chatHistory} 
-                                    setChatHistory={setChatHistory} 
+                                    setChatHistory={handleUpdateChatHistory} 
+                                />
+                            } />
+                            <Route path="/settings" element={
+                                <SettingsPage
+                                    profile={profile}
+                                    setProfile={handleUpdateProfile}
+                                    syncProps={syncProps}
+                                    onDownloadJSON={handleDownloadJSON}
                                 />
                             } />
                             <Route path="*" element={<Navigate to="/" replace />} />

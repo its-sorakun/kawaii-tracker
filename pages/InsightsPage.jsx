@@ -2,13 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import Icon from '../components/Icon.jsx';
 import GeminiLogo from '../components/GeminiLogo.jsx';
 
-// A custom, mechanical markdown parser that avoids bloated node_modules.
-// It directly tokenizes lines, extracts list indicators (* or -), and captures **bold** blocks.
-const MechanicalMarkdown = ({ text }) => {
+// Custom markdown parser updated for clean, avatar-based reading flow (non-terminal)
+const CleanMarkdown = ({ text }) => {
     const lines = text.split('\n');
     
     return (
-        <div className="text-base text-gray-800 dark:text-gray-300">
+        <div className="text-base text-gray-900 dark:text-gray-100 font-sans">
             {lines.map((line, i) => {
                 const trimmed = line.trim();
                 const isListItem = trimmed.startsWith('* ') || trimmed.startsWith('- ');
@@ -18,24 +17,23 @@ const MechanicalMarkdown = ({ text }) => {
                 const tokens = rawContent.split(/(\*\*.*?\*\*)/g);
                 const renderedTokens = tokens.map((token, j) => {
                     if (token.startsWith('**') && token.endsWith('**')) {
-                        return <strong key={j} className="font-bold text-gray-900 dark:text-gray-100">{token.slice(2, -2)}</strong>;
+                        return <strong key={j} className="font-semibold text-gray-900 dark:text-white">{token.slice(2, -2)}</strong>;
                     }
                     return <span key={j}>{token}</span>;
                 });
 
                 if (isListItem) {
                     return (
-                        <div key={i} className="flex gap-3 my-1.5 ml-2">
-                            <span className="text-indigo-500 select-none">•</span>
-                            <span className="leading-relaxed">{renderedTokens}</span>
+                        <div key={i} className="flex gap-3 my-2 ml-2">
+                            <span className="text-gray-400 dark:text-gray-600 select-none text-xl leading-none">•</span>
+                            <span className="leading-relaxed text-[15px]">{renderedTokens}</span>
                         </div>
                     );
                 }
                 
-                // Empty lines act as structural breaks
                 if (trimmed === '') return <div key={i} className="h-4"></div>;
 
-                return <div key={i} className="my-2 leading-relaxed">{renderedTokens}</div>;
+                return <div key={i} className="my-2 leading-relaxed text-[15px]">{renderedTokens}</div>;
             })}
         </div>
     );
@@ -53,8 +51,12 @@ const InsightsPage = ({ profile, logs, chatHistory, setChatHistory }) => {
     ];
 
     useEffect(() => {
+        // Scroll to the bottom gently when new messages arrive
         if (chatScrollRef.current) {
-            chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+            chatScrollRef.current.scrollTo({
+                top: chatScrollRef.current.scrollHeight,
+                behavior: 'smooth'
+            });
         }
     }, [chatHistory, isThinking]);
 
@@ -106,117 +108,124 @@ const InsightsPage = ({ profile, logs, chatHistory, setChatHistory }) => {
     };
 
     return (
-        <div className="w-full max-w-5xl mx-auto flex flex-col h-[calc(100vh-64px)] pb-6 animate-fade-in">
-            <header className="mb-6 flex items-center gap-4 px-2">
-                <GeminiLogo className="w-8 h-8" />
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-                        Gemini Insights
+        <div className="w-full h-[calc(100vh-100px)] flex flex-col relative animate-fade-in font-sans">
+            
+            {/* Minimal Header */}
+            <header className="flex items-center justify-between py-4 px-4 w-full max-w-3xl mx-auto">
+                <div className="flex items-center gap-3">
+                    <h1 className="text-xl font-medium text-gray-800 dark:text-gray-200">
+                        Insights
                     </h1>
-                    <p className="text-gray-500 dark:text-gray-400 text-sm mt-0.5">Automated dietary analysis terminal.</p>
                 </div>
+                {chatHistory.length > 0 && (
+                    <button 
+                        onClick={() => setChatHistory([])}
+                        className="text-sm font-medium text-gray-500 hover:text-gray-900 dark:hover:text-gray-200 transition-colors flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800"
+                        title="Clear Conversation"
+                    >
+                        <Icon name="rotate-ccw" size={16} /> Clear
+                    </button>
+                )}
             </header>
             
-            {/* The Chat Console */}
-            <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-[#141218] border border-gray-200 dark:border-gray-800">
-                
-                <div ref={chatScrollRef} className="flex-1 overflow-y-auto p-6 md:p-10 flex flex-col gap-8">
+            {/* Scrolling Central Document Flow */}
+            <div ref={chatScrollRef} className="flex-1 overflow-y-auto w-full pb-32">
+                <div className="max-w-3xl mx-auto px-4 w-full flex flex-col gap-8 py-6">
+                    
                     {chatHistory.length === 0 ? (
-                        <div className="text-center opacity-60 mt-16 flex flex-col items-center">
-                            <Icon name="terminal" size={48} className="mb-4 text-gray-300 dark:text-gray-700" />
-                            <h3 className="text-xl font-mono mb-2">SYSTEM.READY</h3>
-                            <p className="max-w-md text-sm font-mono">The AI terminal is awaiting your input. Select a quick prompt or type a custom query below.</p>
+                        <div className="flex flex-col items-center justify-center mt-20 opacity-80">
+                            <GeminiLogo className="w-16 h-16 mb-6 opacity-40 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-700" />
+                            <h2 className="text-3xl font-semibold mb-2 text-gray-800 dark:text-gray-200 tracking-tight">How can I help today?</h2>
                         </div>
                     ) : (
                         chatHistory.map((msg, idx) => (
-                            <div key={idx} className={`animate-fade-in w-full flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                
-                                {msg.role === 'user' ? (
-                                    /* User Bubble: Monospaced, right-aligned, strict structure */
-                                    <div className="max-w-[70%] bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 px-5">
-                                        <div className="text-xs font-mono text-gray-400 mb-2 border-b border-gray-200 dark:border-gray-800 pb-2 flex justify-between">
-                                            <span>USER_INPUT</span>
-                                            <Icon name="user" size={14} />
+                            <div key={idx} className="animate-fade-in flex gap-4 md:gap-6 w-full">
+                                {/* Left Aligned Avatar */}
+                                <div className="flex-shrink-0 mt-1">
+                                    {msg.role === 'user' ? (
+                                        <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                                            <Icon name="user" size={16} />
                                         </div>
-                                        <div className="whitespace-pre-wrap font-mono text-sm text-gray-700 dark:text-gray-300">
+                                    ) : (
+                                        <div className="w-8 h-8 rounded-full flex items-center justify-center">
+                                            <GeminiLogo className="w-6 h-6" />
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Flowing Content */}
+                                <div className="flex-1 pt-1 overflow-hidden">
+                                    {msg.role === 'user' ? (
+                                        <div className="text-[15px] font-medium text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
                                             {msg.text}
                                         </div>
-                                    </div>
-                                ) : (
-                                    /* AI Bubble: Full width capability, left accent border */
-                                    <div className="w-full pl-6 border-l-4 border-indigo-500 py-2">
-                                        <div className="flex items-center gap-2 mb-3">
-                                            <GeminiLogo className="w-4 h-4" />
-                                            <span className="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-400">GEMINI_OUTPUT</span>
-                                        </div>
-                                        <MechanicalMarkdown text={msg.text} />
-                                    </div>
-                                )}
+                                    ) : (
+                                        <CleanMarkdown text={msg.text} />
+                                    )}
+                                </div>
                             </div>
                         ))
                     )}
 
                     {isThinking && (
-                        <div className="w-full pl-6 border-l-4 border-indigo-500 py-2 animate-fade-in opacity-50">
-                            <div className="flex items-center gap-2 mb-3">
-                                <GeminiLogo className="w-4 h-4 animate-spin-slow" />
-                                <span className="text-xs font-mono font-bold text-indigo-500">PROCESSING...</span>
+                        <div className="animate-fade-in flex gap-4 md:gap-6 w-full opacity-60">
+                            <div className="flex-shrink-0 mt-1 w-8 h-8 rounded-full flex items-center justify-center">
+                                <GeminiLogo className="w-6 h-6 animate-spin-slow" />
                             </div>
-                            <div className="flex gap-2 mt-2">
-                                <div className="w-1.5 h-4 bg-indigo-500 animate-pulse"></div>
+                            <div className="flex-1 pt-3 flex gap-1">
+                                <div className="w-2 h-2 rounded-full bg-indigo-400 animate-bounce"></div>
+                                <div className="w-2 h-2 rounded-full bg-indigo-400 animate-bounce" style={{animationDelay: '0.15s'}}></div>
+                                <div className="w-2 h-2 rounded-full bg-indigo-400 animate-bounce" style={{animationDelay: '0.3s'}}></div>
                             </div>
                         </div>
                     )}
                 </div>
+            </div>
 
-                <div className="border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-[#1c1b1f] p-4 flex flex-col gap-4">
+            {/* Floating Input Pill Area */}
+            <div className="absolute bottom-0 left-0 right-0 w-full bg-gradient-to-t from-gray-50 via-gray-50 to-transparent dark:from-[#141218] dark:via-[#141218] pt-12 pb-6 px-4 pointer-events-none">
+                <div className="max-w-3xl mx-auto w-full flex flex-col items-center gap-3 pointer-events-auto">
                     
-                    {/* Dynamic Prompt Chips */}
-                    <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-                        {quickPrompts.map((prompt, idx) => (
-                            <button
-                                key={idx}
-                                onClick={() => sendPrompt(prompt)}
-                                disabled={isThinking}
-                                className="whitespace-nowrap px-4 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-sm font-mono hover:border-indigo-400 dark:hover:border-indigo-600 transition-colors disabled:opacity-50"
-                            >
-                                &gt; {prompt}
-                            </button>
-                        ))}
-                    </div>
-
-                    <form onSubmit={handleSendChat} className="flex gap-2">
-                        <div className="flex-1 flex items-center bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 px-4 focus-within:ring-1 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-shadow">
-                            <span className="text-gray-400 font-mono mr-2">&gt;</span>
-                            <input 
-                                type="text" 
-                                value={chatInput}
-                                onChange={e => setChatInput(e.target.value)}
-                                placeholder="Execute command or ask a question..."
-                                className="w-full bg-transparent py-3 focus:outline-none font-mono text-sm"
-                                autoComplete="off"
-                            />
+                    {/* Floating Prompt Chips */}
+                    {chatHistory.length === 0 && (
+                        <div className="flex gap-2 overflow-x-auto w-full pb-2 scrollbar-hide justify-center">
+                            {quickPrompts.map((prompt, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => sendPrompt(prompt)}
+                                    disabled={isThinking}
+                                    className="whitespace-nowrap px-4 py-2 bg-white dark:bg-[#1c1b1f] border border-gray-200 dark:border-gray-800 text-sm rounded-full text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50 shadow-sm"
+                                >
+                                    {prompt}
+                                </button>
+                            ))}
                         </div>
+                    )}
+
+                    {/* Pill Input */}
+                    <form onSubmit={handleSendChat} className="w-full relative flex items-center shadow-lg rounded-full bg-white dark:bg-[#1c1b1f] border border-gray-200 dark:border-gray-800">
+                        <input 
+                            type="text" 
+                            value={chatInput}
+                            onChange={e => setChatInput(e.target.value)}
+                            placeholder="Ask Gemini..."
+                            className="w-full bg-transparent px-6 py-4 rounded-full focus:outline-none text-[15px] text-gray-900 dark:text-gray-100 placeholder-gray-500"
+                            autoComplete="off"
+                        />
                         <button 
                             type="submit" 
                             disabled={!chatInput.trim() || isThinking}
-                            className="bg-indigo-600 text-white px-6 py-3 font-mono text-sm hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+                            className="absolute right-2 p-2.5 bg-gray-100 dark:bg-gray-800 rounded-full text-gray-600 dark:text-gray-300 hover:bg-indigo-100 hover:text-indigo-600 dark:hover:bg-indigo-900/50 dark:hover:text-indigo-400 transition-colors disabled:opacity-30 disabled:hover:bg-gray-100 disabled:hover:text-gray-600"
                         >
-                            EXECUTE <Icon name="corner-down-left" size={16} />
+                            <Icon name="arrow-up" size={20} />
                         </button>
                     </form>
-                    
-                    <div className="text-center">
-                        <button 
-                            onClick={() => setChatHistory([])}
-                            className="text-xs font-mono opacity-40 hover:opacity-100 transition-opacity"
-                        >
-                            [ CLEAR_SESSION ]
-                        </button>
+                    <div className="text-[11px] text-gray-400 dark:text-gray-600 mt-1 font-medium">
+                        Gemini Insights may produce inaccurate information about nutrition or health.
                     </div>
                 </div>
-
             </div>
+
         </div>
     );
 };

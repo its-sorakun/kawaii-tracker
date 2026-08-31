@@ -28,52 +28,46 @@ const LogForm = ({ onAdd }) => {
     };
 
     return (
-        <Card>
-            <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-                <Icon name="plus-circle" className="text-indigo-500" />
-                Log Entry
-            </h2>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5 w-full">
+            <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Food Item</label>
+                <input 
+                    type="text" 
+                    required 
+                    value={foodName} 
+                    onChange={e => setFoodName(e.target.value)}
+                    className="w-full bg-white dark:bg-[#1c1b1f] border border-gray-200 dark:border-gray-800 rounded-2xl px-5 py-4 text-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition-shadow"
+                    placeholder="e.g. Avocado Toast"
+                />
+            </div>
+            <div className="grid grid-cols-2 gap-5">
                 <div>
-                    <label className="block text-sm font-medium mb-1 opacity-70">Food Item</label>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Calories</label>
                     <input 
-                        type="text" 
+                        type="number" 
                         required 
-                        value={foodName} 
-                        onChange={e => setFoodName(e.target.value)}
-                        className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        placeholder="e.g. Oatmeal & Berries"
+                        min="0"
+                        value={calories} 
+                        onChange={e => setCalories(e.target.value)}
+                        className="w-full bg-white dark:bg-[#1c1b1f] border border-gray-200 dark:border-gray-800 rounded-2xl px-5 py-4 text-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition-shadow"
+                        placeholder="kcal"
                     />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium mb-1 opacity-70">Calories</label>
-                        <input 
-                            type="number" 
-                            required 
-                            min="0"
-                            value={calories} 
-                            onChange={e => setCalories(e.target.value)}
-                            className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            placeholder="kcal"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium mb-1 opacity-70">Date & Time</label>
-                        <input 
-                            type="datetime-local" 
-                            required 
-                            value={dateTimestamp} 
-                            onChange={e => setDateTimestamp(e.target.value)}
-                            className="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        />
-                    </div>
+                <div>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Date & Time</label>
+                    <input 
+                        type="datetime-local" 
+                        required 
+                        value={dateTimestamp} 
+                        onChange={e => setDateTimestamp(e.target.value)}
+                        className="w-full bg-white dark:bg-[#1c1b1f] border border-gray-200 dark:border-gray-800 rounded-2xl px-5 py-4 text-[15px] focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition-shadow"
+                    />
                 </div>
-                <button type="submit" className="mt-2 w-full bg-indigo-500 text-white font-medium py-3 rounded-xl hover:bg-indigo-600 transition-colors">
-                    Add to Log
-                </button>
-            </form>
-        </Card>
+            </div>
+            <button type="submit" className="mt-4 w-full bg-indigo-600 text-white font-semibold text-lg py-4 rounded-2xl hover:bg-indigo-700 hover:shadow-md transition-all active:scale-[0.98]">
+                Add to Log
+            </button>
+        </form>
     );
 };
 

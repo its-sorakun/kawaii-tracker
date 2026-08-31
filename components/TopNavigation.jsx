@@ -8,6 +8,7 @@ const TopNavigation = ({ theme, setTheme }) => {
         { path: '/history', icon: 'list', label: 'History' },
         { path: '/chart', icon: 'bar-chart-2', label: 'Chart' },
         { path: '/insights', icon: 'sparkles', label: 'Insights' },
+        { path: '/settings', icon: 'settings', label: 'Settings' },
     ];
 
     return (
