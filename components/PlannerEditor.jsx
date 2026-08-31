@@ -17,12 +17,41 @@ const renderMarkdown = (text) => {
 
 const PlannerEditor = ({ blocks, onChange }) => {
     const [focusedId, setFocusedId] = useState(null);
+    const [isAllSelected, setIsAllSelected] = useState(false);
     const textareaRefs = useRef({});
 
     // Use a locally derived array if blocks is empty, so we don't trigger an immediate save loop
     const displayBlocks = (!blocks || blocks.length === 0) 
         ? [{ id: 'empty-init', type: 'paragraph', content: '' }] 
         : blocks;
+
+    // Handle global key events when everything is selected
+    useEffect(() => {
+        const handleGlobalKeyDown = (e) => {
+            if (!isAllSelected) return;
+
+            if (e.key === 'Backspace' || e.key === 'Delete') {
+                e.preventDefault();
+                onChange([{ id: generateId(), type: 'paragraph', content: '' }]);
+                setIsAllSelected(false);
+                setFocusedId(null);
+            } else if (e.key === 'Escape') {
+                setIsAllSelected(false);
+            } else if (!e.ctrlKey && !e.metaKey && e.key.length === 1) {
+                // If they type a character, replace everything
+                e.preventDefault();
+                const newId = generateId();
+                onChange([{ id: newId, type: 'paragraph', content: e.key }]);
+                setIsAllSelected(false);
+                setFocusedId(newId);
+            }
+        };
+
+        if (isAllSelected) {
+            window.addEventListener('keydown', handleGlobalKeyDown);
+        }
+        return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+    }, [isAllSelected, onChange]);
 
     const updateBlock = (id, newProps) => {
         if (id === 'empty-init') {
@@ -55,6 +84,17 @@ const PlannerEditor = ({ blocks, onChange }) => {
     };
 
     const handleKeyDown = (e, index, block) => {
+        if (e.key === 'a' && (e.ctrlKey || e.metaKey)) {
+            const textarea = textareaRefs.current[block.id];
+            // If text is already fully selected, or block is empty, select all blocks
+            if (textarea && textarea.selectionStart === 0 && textarea.selectionEnd === textarea.value.length) {
+                e.preventDefault();
+                setIsAllSelected(true);
+                textarea.blur();
+                return;
+            }
+        }
+
         if (e.key === 'Enter') {
             // Shift+Enter allows normal multiline within the same block
             if (e.shiftKey && block.type === 'paragraph') {
@@ -166,7 +206,7 @@ const PlannerEditor = ({ blocks, onChange }) => {
                 </button>
             </div>
 
-            <div className="w-full flex-1 p-8 pb-32 cursor-text overflow-y-auto" onClick={handleContainerClick}>
+            <div className={`w-full flex-1 p-8 pb-32 cursor-text overflow-y-auto transition-colors ${isAllSelected ? 'bg-blue-100/50 dark:bg-blue-900/20' : ''}`} onClick={handleContainerClick}>
                 {displayBlocks.map((block, index) => {
                     const isFocused = focusedId === block.id;
 
