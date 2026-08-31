@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import Card from './Card.jsx';
-import Icon from './Icon.jsx';
+import CustomDatePicker from './CustomDatePicker.jsx';
 
 const LogForm = ({ onAdd }) => {
     const [foodName, setFoodName] = useState('');
@@ -40,29 +39,24 @@ const LogForm = ({ onAdd }) => {
                     placeholder="e.g. Avocado Toast"
                 />
             </div>
-            <div className="grid grid-cols-2 gap-5">
-                <div>
-                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Calories</label>
-                    <input 
-                        type="number" 
-                        required 
-                        min="0"
-                        value={calories} 
-                        onChange={e => setCalories(e.target.value)}
-                        className="w-full bg-white dark:bg-[#1c1b1f] border border-gray-200 dark:border-gray-800 rounded-2xl px-5 py-4 text-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition-shadow"
-                        placeholder="kcal"
-                    />
-                </div>
-                <div>
-                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Date & Time</label>
-                    <input 
-                        type="datetime-local" 
-                        required 
-                        value={dateTimestamp} 
-                        onChange={e => setDateTimestamp(e.target.value)}
-                        className="w-full bg-white dark:bg-[#1c1b1f] border border-gray-200 dark:border-gray-800 rounded-2xl px-5 py-4 text-[15px] focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition-shadow"
-                    />
-                </div>
+            <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Calories</label>
+                <input 
+                    type="number" 
+                    required 
+                    min="0"
+                    value={calories} 
+                    onChange={e => setCalories(e.target.value)}
+                    className="w-full bg-white dark:bg-[#1c1b1f] border border-gray-200 dark:border-gray-800 rounded-2xl px-5 py-4 text-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition-shadow"
+                    placeholder="kcal"
+                />
+            </div>
+            <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Date & Time</label>
+                <CustomDatePicker 
+                    value={dateTimestamp}
+                    onChange={setDateTimestamp}
+                />
             </div>
             <button type="submit" className="mt-4 w-full bg-indigo-600 text-white font-semibold text-lg py-4 rounded-2xl hover:bg-indigo-700 hover:shadow-md transition-all active:scale-[0.98]">
                 Add to Log
