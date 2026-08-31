@@ -82,15 +82,8 @@ const App = () => {
         }
     }, [fileHandle, needsPermission, isAppLoaded]);
 
-    // Auto-sync whenever data changes
-    useEffect(() => {
-        if (!isAppLoaded) return;
-        if (skipNextSync.current) {
-            skipNextSync.current = false;
-            return;
-        }
-        performSyncWrite(logs, profile, chatHistory);
-    }, [logs, profile, chatHistory, performSyncWrite, isAppLoaded]);
+    // Auto-sync is REMOVED to prevent losing user gesture context.
+    // We now sync explicitly on user actions (button clicks).
 
     const handleConnectFile = async (e) => {
         if (e) e.preventDefault();
@@ -101,7 +94,6 @@ const App = () => {
             // Read existing data from the selected file
             const data = await readDataFromFile(handle);
             if (data) {
-                skipNextSync.current = true;
                 if (data.logs) setLogs(data.logs);
                 if (data.profile) setProfile(data.profile);
                 if (data.chatHistory) setChatHistory(data.chatHistory);
@@ -121,7 +113,6 @@ const App = () => {
         if (granted) {
             const data = await readDataFromFile(fileHandle);
             if (data) {
-                skipNextSync.current = true;
                 if (data.logs) setLogs(data.logs);
                 if (data.profile) setProfile(data.profile);
                 if (data.chatHistory) setChatHistory(data.chatHistory);
@@ -136,15 +127,23 @@ const App = () => {
         await disconnectSyncFile();
         setFileHandle(null);
         setNeedsPermission(false);
-        // We drop back to whatever is in memory, it will save to localStorage on next change
     };
 
     const handleAddLog = (newLog) => {
-        setLogs(prev => [newLog, ...prev].sort((a, b) => new Date(b.date) - new Date(a.date)));
+        const newLogs = [newLog, ...logs].sort((a, b) => new Date(b.date) - new Date(a.date));
+        setLogs(newLogs);
+        performSyncWrite(newLogs, profile, chatHistory);
     };
 
     const handleDeleteLog = (id) => {
-        setLogs(prev => prev.filter(l => l.id !== id));
+        const newLogs = logs.filter(l => l.id !== id);
+        setLogs(newLogs);
+        performSyncWrite(newLogs, profile, chatHistory);
+    };
+
+    const handleUpdateProfile = (newProfile) => {
+        setProfile(newProfile);
+        performSyncWrite(logs, newProfile, chatHistory);
     };
 
     const handleDownloadJSON = () => {
@@ -194,7 +193,7 @@ const App = () => {
                                 <LogPage 
                                     onAddLog={handleAddLog} 
                                     profile={profile} 
-                                    setProfile={setProfile} 
+                                    setProfile={handleUpdateProfile} 
                                     onDownloadJSON={handleDownloadJSON}
                                     syncProps={syncProps}
                                 />
