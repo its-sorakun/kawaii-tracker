@@ -101,19 +101,25 @@ const InsightsPage = ({ profile, logs, chatHistory, setChatHistory, weeklyTotal 
                 };
             });
 
+            const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            const oneWeekLogs = logs.filter(l => new Date(l.date) >= oneWeekAgo);
+
             const systemContext = `
                 You are a helpful, direct, and slightly technical AI assistant embedded in a Calorie Tracker app.
-                The user has the following profile: Height: ${profile.height || 'Unknown'}cm, Weight: ${profile.weight || 'Unknown'}kg, Age: ${profile.age || 'Unknown'}.
+                The current local date and time is: ${now.toLocaleString()}.
+
+                The user has the following physical profile: Height: ${profile.height || 'Unknown'}cm, Weight: ${profile.weight || 'Unknown'}kg, Age: ${profile.age || 'Unknown'}.
                 Their total calorie intake over this current week (starting Monday) is ${weeklyTotal} kcal.
                 
                 Here is their 12-Week Macro Trend (Total calories per calendar week):
                 ${JSON.stringify(macroData)}
 
-                Here are their recent individual daily calorie logs (JSON format):
-                ${JSON.stringify(logs.slice(0, 50))}
+                Here is their calorie log for the last 7 days (JSON format):
+                ${JSON.stringify(oneWeekLogs)}
                 
                 Keep your answers concise, practical, and formatting using plain text or basic markdown (**bold**, * lists). 
                 Focus on the data provided. Use the 12-week macro trend to identify if they are actually losing weight over time (compare their weekly total against their weekly BMR).
+                When the user asks about "today" or time-specific things, reference the current local time provided.
                 Do not use hashtags for headers.
             `;
 
