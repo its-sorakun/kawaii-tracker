@@ -10,11 +10,17 @@ const TopFoodsChart = ({ logs, theme }) => {
     // Process logs to aggregate calories by food name (case-insensitive)
     const topFoods = useMemo(() => {
         const foodMap = {};
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
         logs.forEach(log => {
-            // Basic normalization: trim and lowercase
-            const name = log.food.trim().toLowerCase();
-            if (!foodMap[name]) foodMap[name] = 0;
-            foodMap[name] += log.calories;
+            const logDate = new Date(log.date);
+            if (logDate >= today) {
+                // Basic normalization: trim and lowercase
+                const name = log.food.trim().toLowerCase();
+                if (!foodMap[name]) foodMap[name] = 0;
+                foodMap[name] += log.calories;
+            }
         });
 
         // Convert to array, sort by calories (descending), and take top 5
@@ -91,7 +97,7 @@ const TopFoodsChart = ({ logs, theme }) => {
         <Card className="h-full flex flex-col p-6">
             <h3 className="text-sm font-semibold mb-4 flex items-center gap-2 text-gray-700 dark:text-gray-300">
                 <Icon name="pie-chart" size={16} className="text-rose-500" />
-                Top Caloric Contributors
+                Top Caloric Contributors (Today)
             </h3>
             
             {topFoods.length === 0 ? (

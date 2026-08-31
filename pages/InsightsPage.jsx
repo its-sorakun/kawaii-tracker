@@ -70,15 +70,51 @@ const InsightsPage = ({ profile, logs, chatHistory, setChatHistory, weeklyTotal 
         setIsThinking(true);
 
         try {
+            // Compute 12-Week Macro Data for AI context
+            const weeks = [];
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+            const currentDay = now.getDay() || 7;
+            const currentMonday = new Date(now);
+            currentMonday.setDate(now.getDate() - currentDay + 1);
+            
+            for (let i = 11; i >= 0; i--) {
+                const monday = new Date(currentMonday);
+                monday.setDate(monday.getDate() - (i * 7));
+                weeks.push(monday);
+            }
+
+            const macroData = weeks.map(monday => {
+                const weekEnd = new Date(monday);
+                weekEnd.setDate(weekEnd.getDate() + 7);
+                const totalCals = logs
+                    .filter(l => {
+                        const d = new Date(l.date);
+                        d.setHours(0,0,0,0);
+                        return d >= monday && d < weekEnd;
+                    })
+                    .reduce((sum, l) => sum + Number(l.calories), 0);
+                
+                return {
+                    week_of: monday.toISOString().split('T')[0],
+                    total_calories: totalCals
+                };
+            });
+
             const systemContext = `
                 You are a helpful, direct, and slightly technical AI assistant embedded in a Calorie Tracker app.
                 The user has the following profile: Height: ${profile.height || 'Unknown'}cm, Weight: ${profile.weight || 'Unknown'}kg, Age: ${profile.age || 'Unknown'}.
-                Their total calorie intake over the last 7 days is ${weeklyTotal} kcal.
-                Here are their recent calorie logs (JSON format):
+                Their total calorie intake over this current week (starting Monday) is ${weeklyTotal} kcal.
+                
+                Here is their 12-Week Macro Trend (Total calories per calendar week):
+                ${JSON.stringify(macroData)}
+
+                Here are their recent individual daily calorie logs (JSON format):
                 ${JSON.stringify(logs.slice(0, 50))}
                 
                 Keep your answers concise, practical, and formatting using plain text or basic markdown (**bold**, * lists). 
-                Focus on the data provided. Do not use hashtags for headers.
+                Focus on the data provided. Use the 12-week macro trend to identify if they are actually losing weight over time (compare their weekly total against their weekly BMR).
+                Do not use hashtags for headers.
             `;
 
             const response = await fetch('/api/chat', {

@@ -14,14 +14,18 @@ const TimeDistributionChart = ({ logs, theme }) => {
         let evening = 0;   // 17:00 - 21:59
         let night = 0;     // 22:00 - 4:59
 
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
         logs.forEach(log => {
             const date = new Date(log.date);
-            const hour = date.getHours();
-
-            if (hour >= 5 && hour < 11) morning += log.calories;
-            else if (hour >= 11 && hour < 17) afternoon += log.calories;
-            else if (hour >= 17 && hour < 22) evening += log.calories;
-            else night += log.calories;
+            if (date >= today) {
+                const hour = date.getHours();
+                if (hour >= 5 && hour < 11) morning += log.calories;
+                else if (hour >= 11 && hour < 17) afternoon += log.calories;
+                else if (hour >= 17 && hour < 22) evening += log.calories;
+                else night += log.calories;
+            }
         });
 
         return [morning, afternoon, evening, night];
@@ -81,7 +85,7 @@ const TimeDistributionChart = ({ logs, theme }) => {
         <Card className="h-full flex flex-col p-6 relative">
             <h3 className="text-sm font-semibold mb-2 flex items-center gap-2 text-gray-700 dark:text-gray-300">
                 <Icon name="clock" size={16} className="text-amber-500" />
-                Time of Day
+                Time of Day (Today)
             </h3>
             
             {totalCalculated === 0 ? (
