@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import Icon from './Icon.jsx';
 
-const TopNavigation = ({ theme, setTheme }) => {
+const TopNavigation = ({ theme, setTheme, weeklyTotal }) => {
     const navItems = [
         { path: '/', icon: 'plus-circle', label: 'Log' },
         { path: '/history', icon: 'list', label: 'History' },
@@ -42,8 +42,14 @@ const TopNavigation = ({ theme, setTheme }) => {
                     ))}
                 </nav>
 
-                {/* Theme Toggle & Mobile Nav Placeholder */}
+                {/* Theme Toggle & Weekly Total Area */}
                 <div className="flex items-center gap-4">
+                    {/* Weekly Total Widget */}
+                    <div className="hidden md:flex flex-col items-end mr-2">
+                        <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">7-Day Total</span>
+                        <span className="text-sm font-extrabold text-indigo-600 dark:text-indigo-400">{weeklyTotal?.toLocaleString() || 0} kcal</span>
+                    </div>
+
                     <button 
                         onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                         className="p-2.5 rounded-full text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#1c1b1f] transition-colors"

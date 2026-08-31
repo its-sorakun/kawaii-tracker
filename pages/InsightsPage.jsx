@@ -39,7 +39,7 @@ const CleanMarkdown = ({ text }) => {
     );
 };
 
-const InsightsPage = ({ profile, logs, chatHistory, setChatHistory }) => {
+const InsightsPage = ({ profile, logs, chatHistory, setChatHistory, weeklyTotal }) => {
     const [chatInput, setChatInput] = useState('');
     const [isThinking, setIsThinking] = useState(false);
     const chatScrollRef = useRef(null);
@@ -73,6 +73,7 @@ const InsightsPage = ({ profile, logs, chatHistory, setChatHistory }) => {
             const systemContext = `
                 You are a helpful, direct, and slightly technical AI assistant embedded in a Calorie Tracker app.
                 The user has the following profile: Height: ${profile.height || 'Unknown'}cm, Weight: ${profile.weight || 'Unknown'}kg, Age: ${profile.age || 'Unknown'}.
+                Their total calorie intake over the last 7 days is ${weeklyTotal} kcal.
                 Here are their recent calorie logs (JSON format):
                 ${JSON.stringify(logs.slice(0, 50))}
                 

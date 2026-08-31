@@ -175,10 +175,19 @@ const App = () => {
         onRequestPermission: handleRequestPermission
     };
     
+    // Calculate 7-day rolling total
+    const weeklyTotal = React.useMemo(() => {
+        const now = new Date();
+        const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        return logs
+            .filter(log => new Date(log.date) >= oneWeekAgo)
+            .reduce((sum, log) => sum + log.calories, 0);
+    }, [logs]);
+
     return (
         <Router>
             <div className="min-h-screen bg-gray-50 dark:bg-[#141218] flex flex-col transition-colors duration-300">
-                <TopNavigation theme={theme} setTheme={setTheme} />
+                <TopNavigation theme={theme} setTheme={setTheme} weeklyTotal={weeklyTotal} />
                 
                 <main className="flex-1 w-full max-w-6xl mx-auto px-4 md:px-8 py-8">
                     {/* Block rendering if waiting for permission on load to prevent overwrite */}
@@ -206,6 +215,7 @@ const App = () => {
                                     logs={logs} 
                                     chatHistory={chatHistory} 
                                     setChatHistory={handleUpdateChatHistory} 
+                                    weeklyTotal={weeklyTotal}
                                 />
                             } />
                             <Route path="/settings" element={
