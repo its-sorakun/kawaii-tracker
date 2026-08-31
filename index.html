@@ -42,11 +42,23 @@
     
     <div id="root"></div>
 
-    <!-- 
-      We use data-type="module" so Babel treats it as an ES module, 
-      allowing us to use 'import' statements (like importing config.js).
-    -->
-    <script type="text/babel" data-type="module" src="./app.jsx"></script>
+    <!-- Configuration -->
+    <script src="./config.js"></script>
+
+    <!-- Utilities -->
+    <script src="./utils/storage.js"></script>
+    <script src="./utils/dateUtils.js"></script>
+
+    <!-- Components -->
+    <script type="text/babel" src="./components/Icon.jsx"></script>
+    <script type="text/babel" src="./components/Card.jsx"></script>
+    <script type="text/babel" src="./components/LogForm.jsx"></script>
+    <script type="text/babel" src="./components/Profile.jsx"></script>
+    <script type="text/babel" src="./components/WeeklyChart.jsx"></script>
+    <script type="text/babel" src="./components/GeminiChat.jsx"></script>
+    
+    <!-- Main App -->
+    <script type="text/babel" src="./app.jsx"></script>
     
 </body>
 </html>
