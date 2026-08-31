@@ -56,12 +56,12 @@ const PlannerEditor = ({ blocks, onChange }) => {
 
     const handleKeyDown = (e, index, block) => {
         if (e.key === 'Enter') {
-            // Allow multiline freely for normal paragraphs!
-            if (block.type === 'paragraph') {
-                return; // Let the native \n insert into the textarea
+            // Shift+Enter allows normal multiline within the same block
+            if (e.shiftKey && block.type === 'paragraph') {
+                return; 
             }
             
-            // Only spawn new blocks for structured lists
+            // Regular Enter spawns a new block
             e.preventDefault();
             let nextType = 'paragraph';
             if (block.type === 'checkbox') nextType = 'checkbox';
