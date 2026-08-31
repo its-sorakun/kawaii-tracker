@@ -5,12 +5,14 @@ const Icon = ({ name, className = "" }) => {
 
     useEffect(() => {
         if (window.lucide && iconRef.current) {
+            // Re-create the <i> tag inside our stable span
+            iconRef.current.innerHTML = `<i data-lucide="${name}" class="${className}"></i>`;
             window.lucide.createIcons({
-                root: iconRef.current.parentNode,
-                nameAttr: 'data-lucide'
+                root: iconRef.current
             });
         }
-    });
+    }, [name, className]);
 
-    return <i ref={iconRef} data-lucide={name} className={className}></i>;
+    // React tracks this span, Lucide replaces the <i> inside it. Separation of DOM concerns!
+    return <span ref={iconRef} className="inline-flex items-center justify-center"></span>;
 };

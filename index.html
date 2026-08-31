@@ -21,6 +21,11 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 
+    <style type="text/tailwindcss">
+        /* Tell Tailwind v4 to use the .dark class instead of OS media queries */
+        @custom-variant dark (&:where(.dark, .dark *));
+    </style>
+
     <style>
         /* Hide scrollbar for a cleaner look, keeping with the 'beautiful UI' requirement */
         ::-webkit-scrollbar {
