@@ -1,17 +1,17 @@
-# Tinkerer's Calorie Tracker
+# Calorie Tracker with AI
 
-A highly experimental, local-first Calorie Tracker and Meal Planner built to be completely transparent, hackable, and fundamentally yours.
+A fully featured, local-first Calorie Tracker and Meal Planner powered by AI.
 
-Instead of hiding your health data inside an opaque SQLite database or a locked-down cloud service, this application uses the **File System Access API** to directly read and write a raw, human-readable `.json` file on your hard drive. You maintain absolute control over your data. If you want to manually edit your past logs in a text editor, run Python scripts against your dietary history, or back it up via Git, you can. 
+This application was built as an alternative to mainstream health apps that lock essential features behind premium subscriptions. It uses the **File System Access API** to read and write your data directly to a `.json` file on your local machine. This keeps your data entirely within your control and provides full access to all features without any artificial paywalls.
 
 ## Features
 
-- **Local-First Architecture**: The app strictly operates on a local JSON file of your choosing. No backends, no telemetry, no tracking.
-- **Daily Logging**: Track meals (calories, protein, carbs, fats), body weight, and water intake.
-- **Block-Based Meal Planner**: A custom-built, Notion-style block editor for drafting upcoming meals. Supports interactive checkboxes, markdown styling, and seamless multiline paragraphs.
-- **AI-Powered Insights**: Integrates directly with Google's Gemini AI. The AI runs completely client-side (via API key) and is fed your raw JSON context (including future meal plans) to provide highly personalized, data-driven analysis of your dietary patterns.
-- **Data Visualization**: Granular charts breaking down your macro-nutrient splits and caloric distribution over the course of the day using Recharts.
-- **Dark Mode**: Essential for late-night tinkering.
+- **Local-First Architecture**: Operates directly on a local JSON file. No backend servers required.
+- **Comprehensive Logging**: Track meals (calories, protein, carbs, fats), body weight, and water intake completely for free.
+- **Block-Based Meal Planner**: A custom-built block editor for drafting upcoming meals with interactive checkboxes, markdown styling, and seamless multiline text.
+- **AI-Powered Insights**: Integrates directly with Google's Gemini AI. Feed your raw JSON data to the AI (via your own API key) for highly personalized analysis of your dietary patterns.
+- **Data Visualization**: Granular Recharts breaking down your macro-nutrient splits and caloric distribution over the course of the day.
+- **Dark Mode**: Built-in native dark mode interface.
 
 ## How it Works Under the Hood
 
@@ -77,10 +77,6 @@ Because this app runs locally without a backend, you must manually create the fi
 3. **Connect the App**: Open the tracker in your browser. You will be prompted to select a sync file. Click the button, browse to where you saved `calories-tracker.json`, and grant the browser permission to read and write to it.
 4. **Important Note on Hot-Reloading**: Do not save your `calories-tracker.json` inside the `d:\codih\calorie-tracker\` source folder! If you do, Vite will detect the file changing every time you log a meal, causing the browser to aggressively force-refresh the page and drop your file permissions.
 
-## Experimentation Notes
+## Design Philosophy
 
-This project is designed to be dismantled. 
-- Want to intercept the AI prompts? Check `pages/InsightsPage.jsx` where the unified JSON context is flattened and fed to the LLM. 
-- Want to manipulate the block-editor mechanics? `components/PlannerEditor.jsx` manages the raw key-down events and focus states.
-
-Break it, inspect the failures, and go one layer deeper.
+This project was built to provide a fully capable health tracker without the premium subscriptions common in modern apps. By storing the entire diet history in a standard, human-readable JSON file, the data remains portable and entirely owned by the user. You can manually edit your past logs, parse the data with scripts, or back it up via Git.
