@@ -18,9 +18,7 @@ const TopNavigation = ({ theme, setTheme, weeklyTotal }) => {
                 
                 {/* Logo Area */}
                 <div className="flex items-center gap-3">
-                    <div className="bg-indigo-500 text-white p-2.5 rounded-2xl shadow-sm">
-                        <Icon name="activity" size={24} />
-                    </div>
+                    <img src="/favicon.png" alt="App Logo" className="w-10 h-10 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800" />
                     <h1 className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">Track.</h1>
                 </div>
 

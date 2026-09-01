@@ -213,7 +213,8 @@ const App = () => {
                     {/* Block rendering if waiting for permission on load to prevent overwrite */}
                     {fileHandle && needsPermission && !isAppLoaded ? (
                         <div className="flex items-center justify-center h-full">
-                            <div className="text-center p-8 bg-white dark:bg-[#1c1b1f] rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800">
+                            <div className="text-center p-8 bg-white dark:bg-[#1c1b1f] rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 flex flex-col items-center">
+                                <img src="/favicon.png" alt="App Logo" className="w-16 h-16 rounded-3xl mb-4 shadow-sm border border-gray-200 dark:border-gray-800" />
                                 <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Permission Required</h2>
                                 <p className="mb-6 opacity-70">Please grant access to your sync file to continue.</p>
                                 <button
