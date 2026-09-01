@@ -1,6 +1,10 @@
-# KawaiiTracker
-
-A fully featured, local-first KawaiiTracker and Meal Planner powered by AI.
+<div align="center">
+  <img src="public/favicon.png" alt="KawaiiTracker Logo" width="128" height="128" style="border-radius: 50%; border: 2px solid #5a67d8; margin-bottom: 16px;" />
+  
+  # KawaiiTracker
+  
+  *A fully featured, local-first KawaiiTracker and Meal Planner powered by AI.*
+</div>
 
 This application was built as an alternative to mainstream health apps that lock essential features behind premium subscriptions. It uses the **File System Access API** to read and write your data directly to a `.json` file on your local machine. This keeps your data entirely within your control and provides full access to all features without any artificial paywalls.
 
