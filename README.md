@@ -1,6 +1,6 @@
-# Calorie Tracker with AI
+# KawaiiTracker
 
-A fully featured, local-first Calorie Tracker and Meal Planner powered by AI.
+A fully featured, local-first KawaiiTracker and Meal Planner powered by AI.
 
 This application was built as an alternative to mainstream health apps that lock essential features behind premium subscriptions. It uses the **File System Access API** to read and write your data directly to a `.json` file on your local machine. This keeps your data entirely within your control and provides full access to all features without any artificial paywalls.
 

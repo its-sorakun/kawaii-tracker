@@ -25,7 +25,7 @@ const GeminiChat = ({ isOpen, onClose, profile, logs, chatHistory, setChatHistor
 
         try {
             const systemContext = `
-                You are a helpful, direct, and slightly technical AI assistant embedded in a Calorie Tracker app.
+                You are a helpful, direct, and slightly technical AI assistant embedded in a KawaiiTracker app.
                 The user has the following profile: Height: ${profile.height || 'Unknown'}, Weight: ${profile.weight || 'Unknown'}.
                 Here are their recent calorie logs (JSON format):
                 ${JSON.stringify(logs.slice(0, 50))}

@@ -155,7 +155,7 @@ const InsightsPage = ({ profile, logs, chatHistory, setChatHistory, weeklyTotal,
             }
 
             const systemContext = `
-                You are a helpful, direct, and slightly technical AI assistant embedded in a Calorie Tracker app.
+                You are a helpful, direct, and slightly technical AI assistant embedded in a KawaiiTracker app.
                 The current local date and time is: ${now.toLocaleString()}.
 
                 The user has the following physical profile: Height: ${profile.height || 'Unknown'}cm, Weight: ${profile.weight || 'Unknown'}kg, Age: ${profile.age || 'Unknown'}.
