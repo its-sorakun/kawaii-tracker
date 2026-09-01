@@ -63,7 +63,7 @@ const PlannerPage = ({ plannerNotes, onUpdatePlanner }) => {
                     <p className="text-gray-500 dark:text-gray-400 mt-1">Jot down your meal ideas and schedule.</p>
                 </div>
                 <div className="w-full md:w-auto self-start">
-                    <CustomDatePicker selectedDate={selectedDate} onChange={setSelectedDate} dropdownPosition="bottom-right" />
+                    <CustomDatePicker value={selectedDate} onChange={(dateStr) => setSelectedDate(new Date(dateStr))} dropdownPosition="bottom-right" />
                 </div>
             </header>
 

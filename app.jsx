@@ -8,25 +8,25 @@ import PlannerPage from './pages/PlannerPage.jsx';
 import InsightsPage from './pages/InsightsPage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
 import { loadData, saveData } from './utils/storage.js';
-import { 
-    selectSyncFile, 
-    getStoredFileHandle, 
-    verifyPermission, 
-    readDataFromFile, 
-    writeDataToFile, 
-    disconnectSyncFile 
+import {
+    selectSyncFile,
+    getStoredFileHandle,
+    verifyPermission,
+    readDataFromFile,
+    writeDataToFile,
+    disconnectSyncFile
 } from './utils/fileSync.js';
 
 const App = () => {
     // Basic Theme State (still stored in localStorage because it's a UI preference)
     const [theme, setTheme] = useState(() => loadData('theme', 'light'));
-    
+
     // Core Data States
     const [logs, setLogs] = useState([]);
     const [profile, setProfile] = useState({ height: '', weight: '', age: '', gender: 'male' });
     const [chatHistory, setChatHistory] = useState([]);
     const [plannerNotes, setPlannerNotes] = useState({});
-    
+
     // File Sync States
     const [fileHandle, setFileHandle] = useState(null);
     const [needsPermission, setNeedsPermission] = useState(false);
@@ -64,7 +64,7 @@ const App = () => {
 
     const performSyncWrite = useCallback(async (currentLogs, currentProfile, currentChat, currentPlanner) => {
         if (!isAppLoaded) return;
-        
+
         if (fileHandle && !needsPermission) {
             setIsSyncing(true);
             try {
@@ -96,7 +96,7 @@ const App = () => {
         try {
             const handle = await selectSyncFile();
             setFileHandle(handle);
-            
+
             // Read existing data from the selected file
             const data = await readDataFromFile(handle);
             if (data) {
@@ -165,7 +165,7 @@ const App = () => {
         const newPlanner = { ...plannerNotes, [dateString]: text };
         // Clean up empty notes
         if (typeof text === 'string' && !text.trim()) delete newPlanner[dateString];
-        
+
         setPlannerNotes(newPlanner);
         performSyncWrite(logs, profile, chatHistory, newPlanner);
     };
@@ -190,7 +190,7 @@ const App = () => {
         onDisconnect: handleDisconnect,
         onRequestPermission: handleRequestPermission
     };
-    
+
     // Calculate "This Week's" total (starting from the most recent Monday at 00:00)
     const weeklyTotal = React.useMemo(() => {
         const now = new Date();
@@ -198,7 +198,7 @@ const App = () => {
         const currentDay = now.getDay() || 7; // Sunday=0 -> 7
         const thisMonday = new Date(now);
         thisMonday.setDate(now.getDate() - currentDay + 1);
-        
+
         return logs
             .filter(log => new Date(log.date) >= thisMonday)
             .reduce((sum, log) => sum + log.calories, 0);
@@ -208,7 +208,7 @@ const App = () => {
         <Router>
             <div className="min-h-screen bg-gray-50 dark:bg-[#141218] flex flex-col transition-colors duration-300">
                 <TopNavigation theme={theme} setTheme={setTheme} weeklyTotal={weeklyTotal} />
-                
+
                 <main className="flex-1 w-full max-w-6xl mx-auto px-4 md:px-8 py-8">
                     {/* Block rendering if waiting for permission on load to prevent overwrite */}
                     {fileHandle && needsPermission && !isAppLoaded ? (
@@ -216,7 +216,7 @@ const App = () => {
                             <div className="text-center p-8 bg-white dark:bg-[#1c1b1f] rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800">
                                 <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Permission Required</h2>
                                 <p className="mb-6 opacity-70">Please grant access to your sync file to continue.</p>
-                                <button 
+                                <button
                                     onClick={handleRequestPermission}
                                     className="bg-indigo-500 text-white px-6 py-3 rounded-xl font-medium hover:bg-indigo-600 transition-colors"
                                 >
@@ -231,11 +231,11 @@ const App = () => {
                             <Route path="/history" element={<HistoryPage logs={logs} onDeleteLog={handleDeleteLog} />} />
                             <Route path="/planner" element={<PlannerPage plannerNotes={plannerNotes} onUpdatePlanner={handleUpdatePlanner} />} />
                             <Route path="/insights" element={
-                                <InsightsPage 
-                                    profile={profile} 
-                                    logs={logs} 
-                                    chatHistory={chatHistory} 
-                                    setChatHistory={handleUpdateChatHistory} 
+                                <InsightsPage
+                                    profile={profile}
+                                    logs={logs}
+                                    chatHistory={chatHistory}
+                                    setChatHistory={handleUpdateChatHistory}
                                     weeklyTotal={weeklyTotal}
                                     plannerNotes={plannerNotes}
                                 />
